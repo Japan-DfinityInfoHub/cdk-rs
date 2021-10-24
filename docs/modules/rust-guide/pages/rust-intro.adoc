@@ -1,3 +1,37 @@
+= Rust を使うには
+:cdk-short-name: DFINITY Rust CDK
+:cdk-long-name: DFINITY Canister Development Kit (CDK) for Rust
+:cdk: Rust Canister Development Kit (CDK)
+
+Rust は、強力で型安全なモダンプログラミング言語で、活発な開発者コミュニティを有しています。
+Rust は WebAssembly にコンパイルされるため、{IC} 上で動作する Dapps を開発するための豊富な開発環境を提供しています。
+{IC} 向けの Rust での Dapps 作成を支援するために、{company-id} は開発プロセスを簡略化するツールをいくつか提供しています。
+
+このツールを総称して {cdk-long-name} と呼びます。これは、以下の主要ライブラリで構成されています:
+
+[width="100%",cols="<20%,<80%",options="header"]
+|===
+|パッケージ名 |概要
+
+|`+ic-types+` |`+ic-types+` クレートは、分散型の {IC} と通信する際や、{IC} 上で Canister スマートコントラクトとしてデプロイされる Dapps を構築する際に使用される型定義を行います。
+
+|`+ic-agent+` |`+ic-agent+` ライブラリは、{IC} とのダイレクトなコミュニケーションを可能にします。
+
+|`+ic-utils+` |`+ic-utils+` ライブラリは、Canister スマートコントラクトとしてデプロイされた関数の呼び出しや Dapps を管理するためのユーティリティです。
+
+|`+ic-cdk+` |`+ic-cdk+` は、Rust プログラムが {IC} システムの API と対話可能なコアメソッドを提供します。Rust CDKのランタイムコアとして機能します。
+
+|`+ic-cdk-macros+` |`+ic-cdk-macros+` ライブラリは、操作用のエンドポイントや API の構築を容易にする、手続き的マクロを定義します。このライブラリは、`+update+`, `+query+`、`+import+` やその他の重要な操作のためのマクロを含みます。
+
+|`+ic-cdk-optimizer+` |`+ic-cdk-optimizer+` は、WebAssembly モジュールのサイズを小さくするためのヘルパーライブラリです。
+
+|===
+
+下のダイアグラムは、{cdk} の構成ブロックを抽象度の低いものから高いものへと簡略化して図示したものです。
+
+image:Rust-building-blocks.svg[]
+
+////
 = Introduction to working with Rust
 :cdk-short-name: DFINITY Rust CDK
 :cdk-long-name: DFINITY Canister Development Kit (CDK) for Rust
@@ -32,3 +66,4 @@ Collectively, these tools are referred to as the {cdk-long-name} and consist of 
 The following diagram provides a simplified view of the {cdk} building blocks from the lowest to highest level of abstraction.
 
 image:Rust-building-blocks.svg[]
+////
