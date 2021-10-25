@@ -149,7 +149,7 @@ include::example$hello-dfx.json[]
 [[add-a-cargotoml-file-to-the-project]]
 === Cargo.toml ファイルの追加
 
-{IC} で動かすのために {sdk-short-name} を使って新しい Rust プロジェクトを作っているので、プロジェクトディレクトリ内の特定の場所に Rust 固有のファイルを手動で作成する必要があります。
+{IC} で動かすために {sdk-short-name} を使って新しい Rust プロジェクトを作っているので、プロジェクトディレクトリ内の特定の場所に Rust 固有のファイルを手動で作成する必要があります。
 まず、プロジェクトのパッケージ情報を書くための `+Cargo.toml+` ファイルを作成しましょう。
 
 プロジェクトに `+Cargo.toml+` ファイルを追加するには、以下のようにします：
