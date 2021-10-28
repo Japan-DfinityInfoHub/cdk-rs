@@ -145,7 +145,7 @@ include::example$counter-tutorial/rust_counter_dfx.json[]
 
 . 自分がプロジェクトのルートディレクトリにいることを確認します。
 . カレントディレクトリに `+Cargo.toml+` という名前のファイルを作成します。
-. エキストエディタで `+Cargo.toml+` を開きます。
+. テキストエディタで `+Cargo.toml+` を開きます。
 . `+[workspace]+` キーを使って Dapp のソースファイルのディレクトリを指定します:
 +
 [source,toml]
