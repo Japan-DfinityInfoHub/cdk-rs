@@ -1,3 +1,73 @@
+= Rust プログラムの最適化
+:proglang: Rust
+:platform: Internet Computer プラットフォーム
+:LEE: ローカル Canister 実行環境
+:IC: Internet Computer ブロックチェーン
+:company-id: DFINITY
+:cdk-short-name: DFINITY Rust CDK
+:sdk-short-name: DFINITY Canister SDK
+:cdk-long-name: DFINITY Canister Development Kit (CDK) for Rust
+:sdk-long-name: DFINITY Canister Software Development Kit (SDK)
+ifdef::env-github,env-browser[:outfilesuffix:.adoc]
+
+Rust を WebAssembly にコンパイルするとファイルサイズが大幅に増加しがちです。{cdk-short-name} には `+ic-cdk-optimizer+` というヘルパーライブラリが含まれており、Rust ベースの Canister スマートコントラクトを {IC} メインネットにデプロイする前にサイズを小さくするのに使用できます。
+
+[[before-you-begin]]
+== はじめる前に
+
+プログラムの最適化を始める前に、以下を確認してください：
+
+* インターネットに接続しており、ローカルの macOS または Linux コンピュータでターミナルにアクセスできること。
+
+* link:https://doc.rust-lang.org/book/ch01-01-installation.html[Rust のインストール方法] にあるように、Rust プログラミング言語と Cargo が OS にダウンロードされ、インストールされていること。
+
++
+[source,bash]
+----
+curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+----
++
+Rust のバージョンは 1.46.0 より新しい必要があります。
+
+* link:../quickstart/local-quickstart{outfilesuffix}#download-and-install[ダウンロードとインストール]の説明に従って、{sdk-long-name} パッケージのダウンロードとインストールが済んでいること。
+
+* `+cmake+` のインストールが済んでいること。例えば、macOS では Homebrew を使って以下のコマンドを実行します:
++
+[source,bash]
+----
+brew install cmake
+----
+Homebrew をインストールする方法については、link:https://docs.brew.sh/Installation[Homebrew のドキュメント]を参照してください。
+
+* Dapp を WebAssembly モジュール（WASM）にコンパイルし、{LEE} 上にデプロイした経験があること。
+
+== 最適化ツールのインストールと実行
+
+Rust の Dapp をコンパイルしてできた Canister を、以下の手順で最適化します：
+
+. 自分がプロジェクトのルートディレクトリにいることを確認します。
+. 過去に `+ic-cdk-optimizer+` クレートをインストールしていなければ、以下のコマンドでインストールします：
++
+[source,bash]
+----
+cargo install ic-cdk-optimizer
+----
++
+このパッケージは、Rust コードを最適化して WebAssembly の出力サイズを小さくし、Dapp が {IC} メインネットに Canister としてアップロードできるようにします。
+. 以下のコマンドを実行して、`+src+` ディレクトリ内に release ディレクトリを作成します。
++
+[source,bash,subs=quotes]
+----
+mkdir -p src/_rust-canister_/target/wasm32-unknown-unknown/release/
+----
+. 以下のコマンドを実行して、`+target+` ディレクトリ内のコードを最適化します。
++
+[source,bash,subs-quotes]
+----
+ic-cdk-optimizer target/wasm32-unknown-unknown/release/_rust_canister_.wasm -o target/wasm32-unknown-unknown/release/_rust_canister_-opt.wasm
+----
+
+////
 = Optimize a Rust program
 :proglang: Rust
 :platform: Internet Computer platform
@@ -66,4 +136,4 @@ mkdir -p src/_rust-canister_/target/wasm32-unknown-unknown/release/
 ----
 ic-cdk-optimizer target/wasm32-unknown-unknown/release/_rust_canister_.wasm -o target/wasm32-unknown-unknown/release/_rust_canister_-opt.wasm
 ----
-
+////
