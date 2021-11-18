@@ -290,6 +290,11 @@ dfx start --background
 登録・ビルド・デプロイを行うためには、以下のようにします:
 
 . プロジェクトのルートディレクトリにいることを確認します。
+. 以下のコマンドを実行し、`wasm32-unknown-unknown` がインストールされていることを確認します：
++
+[source,bash]
+rustup target add wasm32-unknown-unknown
++
 . `+dfx.json+` に指定されている Canister を以下のコマンドで、登録・ビルド・デプロイします:
 +
 [source,bash]
