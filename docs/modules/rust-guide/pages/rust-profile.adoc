@@ -29,6 +29,7 @@ ifdef::env-github,env-browser[:outfilesuffix:.adoc]
 * 部分一致する文字列を照合するシンプルな検索機能の書き方。
 * 特定のプリンシパルとプロフィールの関連付け方。
 
+[[Before-you-begin]]
 == はじめる前に
 
 プロジェクトをはじめる前に、以下をご確認ください:
@@ -73,7 +74,7 @@ Homebrew をインストールする方法については、link:https://docs.br
 +
 [source,bash]
 ----
-dfx new rust_profile
+dfx new --type=rust rust_profile
 ----
 . 以下のコマンドで、プロジェクトディレクトリに移動します。
 +
@@ -82,135 +83,35 @@ dfx new rust_profile
 cd rust_profile
 ----
 
-== デフォルト設定の変更
+[[Modify-the-default-project]]
+== デフォルトプロジェクトの変更
 
-link:rust-quickstart{outfilesuffix}[Hello World! Rust CDK クイックスタート]では、（ちょうど `+cargo new+` で Rust の新しいパッケージを作るのと同じように）`+dfx new+` コマンドで新しいプロジェクトを作るとプロジェクトディレクトリにいくつかのテンプレートファイルが生成されることを学びました。
-{IC} 上で動作する Canister スマートコントラクトを構築する前に、いくつか Rust 固有のファイルをプロジェクトに追加する必要があります。
+link:rust-quickstart{outfilesuffix}[Hello World! Rust CDK クイックスタート]では、Rust Canister のデフォルトプロジェクトのファイルを確認しました。
 
-{proglang} プロジェクトのデフォルト設定を変更するには、以下の手順を踏みます。
+このチュートリアルを完了するには、以下の手順を踏みます。
 
-* <<edit-the-default-canister-settings, Canister の初期設定の変更>>
-* <<add-a-cargotoml-file-to-the-project, Cargo.toml ファイルの追加>>
-* <<add-Rust-files-to-the-source-directory, src ディレクトリへの Rust ファイルの追加>>
-* <<replace-the-default-dapp, デフォルト Dapp の置き換え>>
+* <<Replace-the-default-dapp, デフォルト Dapp の置き換え>>
+* <<Update-interface-description-file, インターフェース記述ファイルの更新>>
 
-[[edit-the-default-canister-settings]]
-=== Canister の初期設定の変更
+[[Replace-the-default-dapp]]
+=== デフォルト Dapp の置き換え
 
-プロジェクトディレクトリに含まれるテンプレートファイルの一つに、`+dfx.json+` 設定ファイルがあります。
-このファイルには {IC} で動かすプロジェクトをビルドするために必要な設定が含まれています。
-これは `+Cargo.toml+` ファイルが Rust プログラムのビルドやパッケージ管理の設定を含んでいるのと同じです。
-Canister スマートコントラクトとして Rust の Dapps をビルドするには、`+dfx.json+` のデフォルト設定を変更する必要があります。
+Rust Dapp 用のファイルが揃ったので、テンプレートの `+lib.rs+` Dapp を {IC} にデプロイしたい Rust Dapp に置き換えていきます。
 
-`+dfx.json+` を変更するには、以下のようにします:
+デフォルトのプログラムを置き換えるには、以下のようにします。
 
 . 自分がプロジェクトのルートディレクトリにいることを確認します。
-. テキストエディタで `+dfx.json+` を開きます。
-. `+canisters.rust_profile+` の設定を、`+cargo build+` コマンドを使って Canister をビルドする設定に置き換えます。
-+
-例えば、`+rust_profile+` キーの下で、`+main+` と `+type+` を以下のように設定します:
-+
-[source,json]
-----
-"build": "cargo build --target wasm32-unknown-unknown --package  rust_profile --release",
-"candid": "src/rust_profile/src/profile.did",
-"wasm": "target/wasm32-unknown-unknown/release/rust_profile.wasm",
-"type": "custom"
-}
-----
-. `+rust_profile_assets+` の設定をすべて削除します。
-+
-このチュートリアルの Dapp では、フロントエンドの `asset` を使用していないので、設定ファイルからこれらの設定を削除することができます。
-また、このチュートリアルでは `+defaults+` と `+dfx+` のキーも削除することができます。
-+
-これらの不要な設定を削除した後の設定ファイルは次のようになります:
-+
-....
-include::example$profile-tutorial/profile-dfx.json[]
-....
-. 変更内容を保存し、ファイルを閉じて次に進みます。
-
-[[add-a-cargotoml-file-to-the-project]]
-=== Cargo.toml ファイルの追加
-
-{IC} で動かすために {sdk-short-name} を使って新しい Rust プロジェクトを作っているので、プロジェクトディレクトリ内の特定の場所に Rust 固有のファイルを手動で作成する必要があります。
-まず、プロジェクトのパッケージ情報を書くための `+Cargo.toml+` ファイルを作成しましょう。
-
-プロジェクトに `+Cargo.toml+` ファイルを追加するには、以下のようにします：
-
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. カレントディレクトリに `+Cargo.toml+` という名前のファイルを作成します。
-. テキストエディタで `+Cargo.toml+` を開きます。
-. `+[workspace]+` キーを使って Dapp のソースファイルのディレクトリを指定します:
-+
-For example:
+. テキストエディタで `+src/rust_profile/Cargo.toml+` ファイルを開き、依存関係に `+serde+` を追加します。
 +
 [source,toml]
 ----
-[workspace]
-members = [
-  "src/rust_profile",
-]
-----
-. 変更内容を保存し、ファイルを閉じて次に進みます。
-
-[[add-Rust-files-to-the-source-directory]]
-=== src ディレクトリへの Rust ファイルの追加
-
-新しいプロジェクトを作成すると、`+src/rust_profile+` ディレクトリが作成され、テンプレートとして `+main.mo+` が作成されます。
-このデフォルトの Dapp を、Rust の `+lib.rs+` パッケージと `+Cargo.toml+` ファイルで置き換えていきます。
-
-`src` ディレクトリに Rust ファイルを用意するのは、以下の手順となります:
-
-. 自分がルートディレクトリにいることを確認します。
-. 以下のコマンドを実行して、ライブラリテンプレートを使用した新しい Cargo パッケージを作成します:
-+
-[source, bash]
-----
-cargo init --lib src/rust_profile
-----
-+
-このコマンドは `+src/rust_profile/src+` ディレクトリに、ライブラリ(`+lib.rs+`)パッケージと、`+Cargo.toml+` ファイルを作成します。
-. `+src/rust_counter/Cargo.toml+` ファイルをテキストエディタで開きます。
-+
-このファイルを使って、Rust パッケージのビルドに関する詳細を設定します。
-最小限の構成として、パッケージ名・クレートタイプ・使用する {cdk-short-name} ライブラリのバージョンなどの基本情報を設定する必要があります:
-+
---
-* `+[lib]+`
-* `+[dependencies]+`
---
-. 既存の `+[dependencies]+` セクションを削除して、以下のように置き換えます:
-+
-[source,toml]
-----
-[lib]
-crate-type = ["cdylib"]
-
 [dependencies]
 ic-cdk = "0.3"
 ic-cdk-macros = "0.3"
-serde = "1.0.111"
+serde = "1.0"
 ----
 +
-NOTE: このあとのチュートリアルでアプリを実際にデプロイする際に、パッケージの依存関係が間違っているというエラーメッセージが表示されることがあります。もし新しいバージョンの {cdk-short-name} がある場合は、`+src/rust_profile/Cargo.toml+` ファイルの依存関係を最新バージョンに合わせて更新してください。
-. 変更を保存してファイルを閉じ、次に進みます。
-
-[[replace-the-default-dapp]]
-=== デフォルトの Dapp を置き換え
-
-これで Rust Dapp 用のファイルが揃ったので、`+main.mo+` Dapp を Rust Dapp に置き換えていきます。
-
-既存の Dapp を置き換えるには以下のようにします：
-
-. 自分がルートディレクトリにいることを確認します。
-. `+src/rust_profile/main.mo+` ファイルを以下のコマンドによって削除します:
-+
-[source,bash]
-----
-rm src/rust_profile/main.mo
-----
-. `+src/rust_profile/src/lib.rs+` ファイルをテキストエディタで開き、既存の内容を削除します。
+. `+src/rust_profile/lib.rs+` ファイルをテキストエディタで開き、既存の内容を削除します。
 +
 次に、`+getSelf+`、`+update+`、`+get+`、`+search+` 関数を Rust プログラムで実装していきます。
 . 下のサンプルコードを `+profile.rs+` にコピー＆ペーストしてください。
@@ -222,7 +123,8 @@ include::example$profile-tutorial/profile.rs[]
 ----
 . 変更を保存してファイルを閉じ、次に進みます。
 
-== インターフェイス記述ファイルの追加
+[[Update-interface-description-file]]
+== インターフェイス記述ファイルの更新
 
 Candid は、{IC} で動作する Canister と対話するためのインターフェース記述言語（IDL）です。
 Candid ファイルは、Canister が定義する各関数の名前・引数・返し値のフォーマットやデータ型など、Canister のインターフェースを言語に依存しないように記述したものです。
@@ -231,18 +133,17 @@ Candid ファイルをプロジェクトに追加することで、Rust で定�
 
 Candid インターフェース記述言語の構文の詳細は link:../candid-guide/candid-intro{outfilesuffix}[_Candid ガイド_]か https://docs.rs/candid/[Candid クレートのドキュメント]をご覧ください。
 
-Candid ファイルを追加するには、以下のようにします:
+Candid ファイルを更新するには、以下のようにします:
 
 . 自分がプロジェクトのルートディレクトリにいることを確認します。
-. `+src/rust_profile/src/+` ディレクトリに、`+profile.did+` という名前でファイルを作成します。
-. `+src/rust_profile/src/profile.did+` ファイルをテキストエディタで開いてください。
+. `+src/rust_profile/rust_profile.did+` ファイルをテキストエディタで開いてください。
 . `+getSelf+`、`+update+`、`+get+`、`+search+` 関数のために以下の `+service+` の定義をコピー＆ペーストして書き込んでください：
 +
 [source,did]
 ----
 include::example$profile-tutorial/profile.did[]
 ----
-. 変更を保存して `+profile.did+` ファイルを閉じ、次に進んでください。
+. 変更を保存してファイルを閉じ、次に進んでください。
 
 [[start-the-local-network]]
 == {LEE} を立ち上げる
@@ -281,22 +182,27 @@ dfx deploy
 +
 ....
 Creating a wallet canister on the local network.
-The wallet canister on the "local" network for user "pubs_user_id" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+The wallet canister on the "local" network for user "default" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
 Deploying all canisters.
 Creating canisters...
 Creating canister "rust_profile"...
 "rust_profile" canister created with canister id: "rrkah-fqaaa-aaaaa-aaaaq-cai"
+Creating canister "rust_profile_assets"...
+"rust_profile_assets" canister created with canister id: "ryjl3-tyaaa-aaaaa-aaaba-cai"
 Building canisters...
-Executing 'cargo build --target wasm32-unknown-unknown --package  rust_profile --release'
-   Compiling rust_profile v0.1.0 (/Users/pubs/rust_profile/src/rust_profile)
-    Finished release [optimized] target(s) in 2.83s
+Executing: "cargo" "build" "--target" "wasm32-unknown-unknown" "--release" "-p" "rust_profile"
+...
+    Finished release [optimized] target(s) in 6.31s
+Building frontend...
 Installing canisters...
 Creating UI canister on the local network.
-The UI canister on the "local" network is "ryjl3-tyaaa-aaaaa-aaaba-cai"
+The UI canister on the "local" network is "r7inp-6aaaa-aaaaa-aaabq-cai"
 Installing code for canister rust_profile, with canister_id rrkah-fqaaa-aaaaa-aaaaq-cai
+...
 Deployed canisters.
 ....
 
+[[Call-functions-on-the-deployed-canister]]
 == デプロイした Canister の関数を呼ぶ
 
 Canister のデプロイが成功すると、Canister の関数を呼ぶことでテストできるようになります。
@@ -361,6 +267,7 @@ dfx canister call rust_profile search '("black")';
   },
 ....
 
+[[Adding-profiles-for-new-identities]]
 == 新しい ID に対するプロフィールの追加
 
 いまのところ、この Dapp はコマンドを実行したプリンシパルに関連付けられた１つのプロフィールしか保存しません。
@@ -463,11 +370,13 @@ dfx canister call rust_profile search '("black")'
 )
 ....
 
+[[Extending-the-sample-dapp]]
 == サンプル Dapp の拡張
 
 このサンプル Dapp は、ユーザー ID ごとに１つのプロフィールを保存するだけです。
 もし各ユーザーのプロフィールにソーシャルコネクションへのリンクを追加するような拡張を行えば、LinkedUp サンプルアプリケーションを Rust で再現することができるでしょう。
 
+[[Stop-the-LEE]]
 == {LEE} を止める
 
 アプリケーションのテストをした後は、{LEE} がバックグラウンドで稼働し続けないように、以下の手順で停止します：
