@@ -76,7 +76,7 @@ Homebrew をインストールする方法については、link:https://docs.br
 +
 [source,bash]
 ----
-dfx new rust_counter
+dfx new --type=rust rust_counter
 ----
 +
 . 以下のコマンドで、プロジェクトディレクトリに移動します。
@@ -86,135 +86,25 @@ dfx new rust_counter
 cd rust_counter
 ----
 
-== デフォルト設定の変更
+[[Modify-the-default-project]]
+== デフォルトプロジェクトの変更
 
-link:rust-quickstart{outfilesuffix}[Hello World! Rust CDK クイックスタート]では、（ちょうど `+cargo new+` で Rust の新しいパッケージを作るのと同じように）`+dfx new+` コマンドで新しいプロジェクトを作るとプロジェクトディレクトリにいくつかのテンプレートファイルが生成されることを学びました。
-{IC} 上で動作する Canister スマートコントラクトを構築する前に、いくつか Rust 固有のファイルをプロジェクトに追加する必要があります。
+link:rust-quickstart{outfilesuffix}[Hello World! Rust CDK クイックスタート]では、Rust の Canister を使ったデフォルトのプロジェクトのファイルを確認しました。
 
-{proglang} プロジェクトのデフォルト設定を変更するには、以下の手順を踏みます。
+このチュートリアルを完了するには、以下の手順を踏みます。
 
-* <<edit-the-default-canister-settings, Canister の初期設定の変更>>
-* <<add-a-cargotoml-file-to-the-project, Cargo.toml ファイルの追加>>
-* <<add-Rust-files-to-the-source-directory, src ディレクトリへの Rust ファイルの追加>>
 * <<replace-the-default-dapp, デフォルト Dapp の置き換え>>
-
-[[edit-the-default-canister-settings]]
-=== Canister の初期設定の変更
-
-プロジェクトディレクトリに含まれるテンプレートファイルの一つに、`+dfx.json+` 設定ファイルがあります。
-このファイルには {IC} で動かすプロジェクトをビルドするために必要な設定が含まれています。
-これは `+Cargo.toml+` ファイルが Rust プログラムのビルドやパッケージ管理の設定を含んでいるのと同じです。
-Canister スマートコントラクトとして Rust の Dapps をビルドするには、`+dfx.json+` のデフォルト設定を変更する必要があります。
-
-`+dfx.json+` を変更するには、以下のようにします:
-
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. テキストエディタで `+dfx.json+` を開きます。
-. `+canisters.rust_counter+` の設定を、`+cargo build+` コマンドを使って Canister をビルドする設定に置き換えます。
-+
-例えば、`+rust_counter+` キーの下で、`+main+` と `+type+` を以下のように設定します:
-+
-[source,json]
-----
-  "rust_counter": {
-    "build": "cargo build --target wasm32-unknown-unknown --package  rust_counter --release",
-    "candid": "src/rust_counter/counter.did",
-    "wasm": "target/wasm32-unknown-unknown/release/rust_counter.wasm",
-    "type": "custom"
-    }
-----
-. `+rust_counter_assets+` の設定をすべて削除します。
-+
-このチュートリアルの Dapp では、フロントエンドの `asset` を使用していないので、設定ファイルからこれらの設定を削除することができます。
-また、このチュートリアルでは `+defaults+` と `+dfx+` のキーも削除することができます。
-+
-これらの不要な設定を削除した後の設定ファイルは次のようになります:
-+
-....
-include::example$counter-tutorial/rust_counter_dfx.json[]
-....
-. 変更内容を保存し、ファイルを閉じて次に進みます。
-
-[[add-a-cargotoml-file-to-the-project]]
-=== Cargo.toml ファイルの追加
-
-{IC} で動かすために {sdk-short-name} を使って新しい Rust プロジェクトを作っているので、プロジェクトディレクトリ内の特定の場所に Rust 固有のファイルを手動で作成する必要があります。
-まず、プロジェクトのパッケージ情報を書くための `+Cargo.toml+` ファイルを作成しましょう。
-
-プロジェクトに `+Cargo.toml+` ファイルを追加するには、以下のようにします：
-
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. カレントディレクトリに `+Cargo.toml+` という名前のファイルを作成します。
-. テキストエディタで `+Cargo.toml+` を開きます。
-. `+[workspace]+` キーを使って Dapp のソースファイルのディレクトリを指定します:
-+
-[source,toml]
-----
-[workspace]
-members = [
-    "src/rust_counter",
-]
-----
-. 変更内容を保存し、ファイルを閉じて次に進みます。
-
-[[add-Rust-files-to-the-source-directory]]
-=== src ディレクトリへの Rust ファイルの追加
-
-新しいプロジェクトを作成すると、`+src/rust_counter+` ディレクトリが作成され、テンプレートとして `+main.mo+` が作成されます。
-このデフォルトの Dapp を、Rust の `+lib.rs+` パッケージと `+Cargo.toml+` ファイルで置き換えていきます。
-
-`src` ディレクトリに Rust ファイルを用意するのは、以下の手順となります:
-
-. 自分がルートディレクトリにいることを確認します。
-. 以下のコマンドを実行して、ライブラリテンプレートを使用した新しい Cargo パッケージを作成します:
-+
-[source, bash]
-----
-cargo init --lib src/rust_counter
-----
-+
-このコマンドは `+src/rust_counter/src+` ディレクトリに、ライブラリ(`+lib.rs+`)パッケージと、`+Cargo.toml+` ファイルを作成します。
-. `+src/rust_counter/Cargo.toml+` ファイルをテキストエディタで開きます。
-+
-このファイルを使って、Rust パッケージのビルドに関する詳細を設定します。
-+
-最小限の構成として、パッケージ名・クレートタイプ・使用する {cdk-short-name} ライブラリのバージョンなどの基本情報を設定する必要があります:
-+
---
-* `+[package]+`
-* `+[lib]+`
-* `+[dependencies]+`
---
-. 既存の `+[dependencies]+` セクションを削除して、以下のように置き換えます:
-+
-[source,toml]
-----
-[lib]
-crate-type = ["cdylib"]
-
-[dependencies]
-ic-cdk = "0.3"
-ic-cdk-macros = "0.3"
-----
-+
-NOTE: このあとのチュートリアルでアプリを実際にデプロイする際に、パッケージの依存関係が間違っているというエラーメッセージが表示されることがあります。もし新しいバージョンの {cdk-short-name} がある場合は、`+src/rust_counter/Cargo.toml+` ファイルの依存関係を最新バージョンに合わせて更新してください。
-. 変更を保存してファイルを閉じ、次に進みます。
+* <<Update-interface-description-file, インターフェース記述ファイルの更新>>
 
 [[replace-the-default-dapp]]
 === デフォルトの Dapp を置き換え
 
-これで Rust Dapp 用のファイルが揃ったので、`+main.mo+` Dapp を Rust Dapp に置き換えていきます。
+これで Rust Dapp 用のファイルが揃ったので、`+lib.rs+` Dapp を Rust Dapp に置き換えていきます。
 
-既存の Dapp を置き換えるには以下のようにします：
+既存の Dapp を置き換えるには以下のようにします。
 
 . 自分がルートディレクトリにいることを確認します。
-. `+src/rust_hello/main.mo+` ファイルを以下のコマンドによって削除します:
-+
-[source,bash]
-----
-rm src/rust_counter/main.mo
-----
-. `+src/rust_hello/src/lib.rs+` ファイルをテキストエディタで開き、既存の内容を削除します。
+. `+src/rust_counter/lib.rs+` ファイルをテキストエディタで開き、既存の内容を削除します。
 +
 次に、`+COUNTER+` 変数の定義と `+increment+` ・ `+get+` ・ `+set+` の３つの関数の実装を行っていきます。
 . 下のサンプルコードを `+lib.rs+` にコピー＆ペーストしてください。
@@ -223,9 +113,10 @@ rm src/rust_counter/main.mo
 ----
 include::example$counter-tutorial/counter.rs[]
 ----
-. 変更を保存してファイルを閉じ、次に進みます。
+. 変更を保存して `+lib.rs+` ファイルを閉じ、次に進みます。
 
-== インターフェイス記述ファイルの追加
+[[Update-interface-description-file]]
+=== インターフェイス記述ファイルの更新
 
 Candid は、{IC} で動作する Canister と対話するためのインターフェース記述言語（IDL）です。
 Candid ファイルは、Canister が定義する各関数の名前・引数・返し値のフォーマットやデータ型など、Canister のインターフェースを言語に依存しないように記述したものです。
@@ -234,11 +125,10 @@ Candid ファイルをプロジェクトに追加することで、Rust で定�
 
 Candid インターフェース記述言語の構文の詳細は link:../candid-guide/candid-intro{outfilesuffix}[_Candid ガイド_]か https://docs.rs/candid/[Candid クレートのドキュメント]をご覧ください。
 
-Candid ファイルを追加するには、以下のようにします:
+Candid ファイルを更新するには、以下のようにします:
 
 . 自分がプロジェクトのルートディレクトリにいることを確認します。
-. `+src/rust_counter/src/+` ディレクトリに、`+counter.did+` という名前でファイルを作成します。
-. `+src/rust_counter/src/counter.did+` ファイルをテキストエディタで開き、 `+increment+` ・ `+get+` ・ `+set+` 関数のために以下の `+service+` の定義をコピー＆ペーストして書き込んでください。
+. `+src/rust_counter/rust_counter.did+` ファイルをテキストエディタで開き、 `+increment+` ・ `+get+` ・ `+set+` 関数のために以下の `+service+` の定義をコピー＆ペーストして書き込んでください。
 +
 [source,did]
 ----
@@ -248,7 +138,7 @@ service : {
   "set": (nat) -> ();
 }
 ----
-. 変更を保存して `+counter.did+` ファイルを閉じ、次に進んでください。
+. 変更を保存して `+rust_counter.did+` ファイルを閉じ、次に進んでください。
 
 [[start-the-local-network]]
 == {LEE} を立ち上げる
@@ -287,31 +177,31 @@ dfx deploy
 +
 ....
 Creating a wallet canister on the local network.
-The wallet canister on the "local" network for user "pubs_user_id" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+The wallet canister on the "local" network for user "default" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
 Deploying all canisters.
 Creating canisters...
 Creating canister "rust_counter"...
 "rust_counter" canister created with canister id: "rrkah-fqaaa-aaaaa-aaaaq-cai"
+Creating canister "rust_counter_assets"...
+"rust_counter_assets" canister created with canister id: "ryjl3-tyaaa-aaaaa-aaaba-cai"
 Building canisters...
-Executing 'cargo build --target wasm32-unknown-unknown --package  rust_counter --release'
-    Updating crates.io index
-  Downloaded thiserror v1.0.25
-  Downloaded libc v0.2.95
-  ...
-  Compiling ic-cdk v0.3
-  Compiling ic-cdk-macros v0.3
-  Compiling rust_counter v0.1.0 (/Users/lisagunn/CDK-RS-APR-2021/rust_counter/src/rust_counter)
-    Finished release [optimized] target(s) in 1m 10s
+Executing: "cargo" "build" "--target" "wasm32-unknown-unknown" "--release" "-p" "rust_counter"
+...
+    Finished release [optimized] target(s) in 53.36s
+Building frontend...
 Installing canisters...
 Creating UI canister on the local network.
-The UI canister on the "local" network is "ryjl3-tyaaa-aaaaa-aaaba-cai"
+The UI canister on the "local" network is "r7inp-6aaaa-aaaaa-aaabq-cai"
 Installing code for canister rust_counter, with canister_id rrkah-fqaaa-aaaaa-aaaaq-cai
+...
 Deployed canisters.
 ....
 
-== Dapp のテスト
+[[Call-functions-and-test-the-dapp]]
+== 関数を読んで Dapp をテストする
 
-ローカルでデプロイした Dapp を、以下の内容をテストします:
+Canister のデプロイに成功したら、Canister の関数を呼び出すことでテストすることができます。
+このチュートリアルでは、以下をテストします。
 
 * `+get+` 関数を呼び、カウンターの値をクエリする。
 * `+increment+` 関数を呼び、呼ぶたびにカウンターの値をインクリメントする。
@@ -330,7 +220,7 @@ dfx canister call rust_counter get
 このコマンドは、`+COUNTER+` 変数の現在の値である０を返します。
 +
 ....
-(0)
+(0 : nat)
 ....
 [arabic]
 . `+increment+` 関数を呼び、`+COUNTER+` 変数の値を１つずつインクリメントします：
@@ -351,7 +241,7 @@ dfx canister call rust_counter get
 このコマンドは、更新された `+COUNTER+` 変数の値である１を返します：
 +
 ....
-(1)
+(1 : nat)
 ....
 . 追加のコマンドを実行して、別の値を使った関数の呼び出しを試してみましょう。
 +
@@ -373,6 +263,7 @@ dfx canister call rust_counter get
 +
 このコマンドは、インクリメントされた値である 988 を返します。
 
+[[Stop-the-LEE]]
 == {LEE} を止める
 
 アプリケーションのテストをした後は、{LEE} がバックグラウンドで稼働し続けないように、以下の手順で停止します：
