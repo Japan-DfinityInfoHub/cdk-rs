@@ -58,24 +58,20 @@ Homebrew をインストールする方法については、link:https://docs.br
 == 新しいプロジェクトの作成
 
 {IC} 用のアプリケーション開発は **プロジェクト** の作成から始まります。
-Cargo と {sdk-short-name} のどちらかを使用して {IC} の新しいプロジェクトを作成します。
+{sdk-short-name} を使用して {IC} の新しいプロジェクトを作成することができます。
 {IC} にデプロイするプロジェクトを作成するため、本チュートリアルでは、親コマンドである `+dfx+` とそのサブコマンドを使って Rust プログラムを作成・ビルド・デプロイする方法を中心に説明します。
-ただし、`+cargo new+` で新規プロジェクトを作成した場合には、開発環境で必要となる `+Cargo.lock+` や `+Cargo.toml+` などのデフォルトファイルがプロジェクトのディレクトリ構造に追加されます。
-
-* プロジェクトの作成に Cargo を使用する場合は、{cdk-long-name} が必要とするファイルをいくつか手動で追加する必要があります。
-* プロジェクトの作成に {sdk-short-name} を使用する場合は、Cargo が必要とするファイルをいくつか手動で追加する必要があります。
 
 {sdk-short-name} を使って新しいプロジェクトを作成する手順は以下になります:
 
 . ローカル PC でターミナルを開きます。
-. 以下のコマンドを実行し、`+rust_hello+` という名前の新しいプロジェクトを作成します。
+. 以下のコマンドを実行し、`+rust_hello+` という名前の Rust Canister を持つ新しいプロジェクトを作成します。
 +
 [source,bash]
 ----
-dfx new rust_hello
+dfx new --type=rust rust_hello
 ----
 +
-`+dfx new rust_hello+` コマンドは `+rust_hello+` プロジェクトのディレクトリとテンプレートファイルと `+rust_hello+` の Git リポジトリを新たに生成します。
+`+dfx new --type=rust rust_hello+` コマンドは `+rust_hello+` プロジェクトのディレクトリとテンプレートファイルと `+rust_hello+` の Git リポジトリを新たに生成します。
 . 以下のコマンドで、プロジェクトディレクトリに移動します。
 +
 [source,bash]
@@ -83,82 +79,40 @@ dfx new rust_hello
 cd rust_hello
 ----
 
-== デフォルト設定の変更
+[[Take-a-look-at-the-project]]
+== プロジェクトファイルを一通り確認する
 
-新しいプロジェクトを作成すると、`+cargo new+` コマンドを使ったときと同じように、いくつかのテンプレートファイルがプロジェクトディレクトリに追加されます。
-{IC} 上で動作する Canister スマートコントラクトを構築する前に、いくつか Rust 固有のファイルをプロジェクトに追加する必要があります。
+プロジェクトをコンパイルし、{IC} にデプロイする準備ができました。
+デプロイする前に、プロジェクトファイルを見てみましょう。
 
-{proglang} プロジェクトのデフォルト設定を変更するには、以下の手順を踏みます。
-
-* <<edit-the-default-canister-settings, Canister の初期設定の変更>>
-* <<add-a-cargotoml-file-to-the-project, Cargo.toml ファイルの追加>>
-* <<add-Rust-files-to-the-source-directory, src ディレクトリへの Rust ファイルの追加>>
-* <<replace-the-default-dapp, デフォルト Dapp の置き換え>>
-
-[[edit-the-default-canister-settings]]
-=== Canister の初期設定の変更
+=== `+dfx.json+`
 
 プロジェクトディレクトリに含まれるテンプレートファイルの一つに、`+dfx.json+` 設定ファイルがあります。
 このファイルには {IC} で動かすプロジェクトをビルドするために必要な設定が含まれています。
 これは `+Cargo.toml+` ファイルが Rust プログラムのビルドやパッケージ管理の設定を含んでいるのと同じです。
-Canister スマートコントラクトとして Rust の Dapps をビルドするには、`+dfx.json+` のデフォルト設定を変更する必要があります。
 
-`+dfx.json+` を変更するには、以下のようにします:
+設定ファイルは次のようなものです。
 
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. テキストエディタで `+dfx.json+` を開きます。
-. `+canisters+` キーの下に、`+rust_hello+` Canister のデフォルト設定があることにお気づきでしょうか。メインの Dapp ファイルへのデフォルトパスや、`type` が `+motoko+` になっていることなどがわかると思います。
-. `+canisters.rust_hello.main+` のキーと設定を、 `+canisters.rust_hello.build+` のキーに置き換え、実行する `+cargo build+` コマンドを以下のように指定します:
-+
-[source, json]
-----
-"build": "cargo build --target wasm32-unknown-unknown --package rust_hello --release",
-----
-. `+canisters.rust_hello.candid+` キーを追加し、Canister に使用する Candid インターフェース記述ファイルの場所を以下のように指定します:
-+
-[source, json]
-----
-"candid": "src/rust_hello/src/rust_hello.did",
-----
-. `+canisters.rust_hello.wasm+` のキーを追加し、Canister に使用するコンパイル済みの WebAssembly ファイルの場所を以下のように指定します:
-+
-[source, json]
-----
-"wasm": "target/wasm32-unknown-unknown/release/rust_hello.wasm",
-----
-. `+canisters.rust_hello.type+` のキーを変更し、Canister の `type` として `+custom+` を指定します:
-+
-[source, json]
-----
-"type": "custom"
-----
-. `+rust_hello_assets+` の設定をすべて削除します。
-+
-このチュートリアルの Dapp では、フロントエンドの `asset` を使用していないので、設定ファイルからこれらの設定を削除することができます。
-+
-また、このチュートリアルでは `+defaults+` と `+dfx+` のキーも削除することができます。
-+
-これらの不要な設定を削除した後の設定ファイルは次のようになります:
-+
 ....
 include::example$hello-dfx.json[]
 ....
 
-. 変更内容を保存し、ファイルを閉じて次に進みます。
+`+canisters+` キーの下に、`+rust_hello+` Canister のデフォルト設定があることに注意してください。
 
-[[add-a-cargotoml-file-to-the-project]]
-=== Cargo.toml ファイルの追加
+. `+"type": "rust "+` は `+rust_hello+` が `+rust+` タイプの Canister であることを指定します。
 
-{IC} で動かすために {sdk-short-name} を使って新しい Rust プロジェクトを作っているので、プロジェクトディレクトリ内の特定の場所に Rust 固有のファイルを手動で作成する必要があります。
-まず、プロジェクトのパッケージ情報を書くための `+Cargo.toml+` ファイルを作成しましょう。
+. `+"candid": "src/rust_hello/rust_hello.did "+` は、Canister に使用する Candid インターフェース記述ファイルの場所を指定します。
 
-プロジェクトに `+Cargo.toml+` ファイルを追加するには、以下のようにします：
+. `+"package": "rust_hello "+` は、Rust クレートのパッケージ名を指定します。`+Cargo.toml+` ファイルに記述されているものと同じである必要があります。
 
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. カレントディレクトリに `+Cargo.toml+` という名前のファイルを作成します.
-. テキストエディタで `+Cargo.toml+` を開きます。
-. `+[workspace]+` キーを使って Dapp のソースファイルのディレクトリを指定します:
-+
+=== `+Cargo.toml+`
+
+ルートディレクトリには、`+Cargo.toml+` というファイルがあります。
+
+これは、各 Rust クレートのパスを指定することで、Rust ワークスペースを定義しています。
+Rust タイプの Canister は、WebAssembly にコンパイルされた Rust クレートにすぎません。
+ここでは、`+src/rust_hello+` に一つのメンバーを持っており、これが唯一の Rust Canister です。
+
 [source,toml]
 ----
 [workspace]
@@ -166,78 +120,44 @@ members = [
     "src/rust_hello",
 ]
 ----
-. 変更内容を保存し、ファイルを閉じて次に進みます。
 
-[[add-Rust-files-to-the-source-directory]]
-=== src ディレクトリへの Rust ファイルの追加
+=== `+src/rust_hello/+`
 
-新しいプロジェクトを作成すると、`+src/rust_hello+` ディレクトリが作成され、テンプレートとして `+main.mo+` が作成されます。
-このデフォルトの Dapp を、Rust の `+lib.rs+` パッケージと `+Cargo.toml+` ファイルで置き換えていきます。
+さて、Rust Canister を見ていきましょう。標準的な Rust クレートと同様に `+Cargo.toml+` ファイルがあり、Rust クレートをビルドするための詳細な設定をしています。
 
-`src` ディレクトリに Rust ファイルを用意するのは、以下の手順となります:
+==== `+src/rust_hello/Cargo.toml+`
 
-. 自分がルートディレクトリにいることを確認します。
-. 以下のコマンドを実行して、ライブラリテンプレートを使用した新しい Cargo パッケージを作成します:
-+
-[source, bash]
-----
-cargo init --lib src/rust_hello
-----
-+
-このコマンドは `+src/rust_hello/src+` ディレクトリに、ライブラリ(`+lib.rs+`)パッケージと、`+Cargo.toml+` ファイルを作成します。
-. `+src/rust_hello/Cargo.toml+` ファイルをテキストエディタで開きます。
-+
-このファイルを使って、Rustパッケージのビルドに関する詳細を設定します。
-+
-最小限の構成として、パッケージ名・クレートタイプ・使用する {cdk-short-name} ライブラリのバージョンなどの基本情報を以下のように設定する必要があります:
-+
---
-* `+[package]+`
-* `+[lib]+`
-* `+[dependencies]+`
---
-. 既存の `+[dependencies]+` セクションを削除して、以下のように置き換えます:
-+
 [source,toml]
 ----
+[package]
+name = "rust_hello"
+version = "0.1.0"
+edition = "2018"
+
 [lib]
+path = "lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 ic-cdk = "0.3"
 ic-cdk-macros = "0.3"
 ----
-+
-NOTE: このあとのチュートリアルでアプリを実際にデプロイする際に、パッケージの依存関係が間違っているというエラーメッセージが表示されることがあります。もし新しいバージョンの {cdk-short-name} がある場合は、`+src/rust_hello/Cargo.toml+` ファイルの依存関係を最新バージョンに合わせて更新してください。
-. 変更を保存してファイルを閉じ、次に進みます。
 
-[[replace-the-default-dapp]]
-=== デフォルトの Dapp を置き換え
+`+crate-type = ["cdylib"]+` の行に注目してください。これは、この Rust プログラムを WebAssembly モジュールにコンパイルするために必要なものです。
 
-これで Rust Dapp 用のファイルが揃ったので、`+main.mo+` Dapp を Rust Dapp に置き換えていきます。
+==== `+src/rust_hello/lib.rs+`
 
-既存の Dapp を置き換えるには以下のようにします：
+デフォルトのプロジェクトでは、{cdk-short-name} `+query+` マクロを使用したシンプルな `+greet+` 関数が用意されています。
 
-. 自分がルートディレクトリにいることを確認します。
-. `+src/rust_hello/main.mo+` ファイルを以下のコマンドによって削除します:
-+
-[source,bash]
-----
-rm src/rust_hello/main.mo
-----
-. `+src/rust_hello/src/lib.rs+` ファイルをテキストエディタで開き、既存の内容を削除します。
-. {cdk-short-name} の `+query+` マクロを使った、シンプルな `+print+` 関数を以下のように書いてみましょう:
-+
 [source,rust]
 ----
 #[ic_cdk_macros::query]
-fn print() {
-    ic_cdk::print("Hello World from DFINITY!");
+fn greet(name: String) -> String {
+    format!("Hello, {}!", name)
 }
 ----
-. 変更を保存してファイルを閉じ、次に進みます。
 
-== インターフェイス記述ファイルの追加
+==== `+src/rust_hello/rust_hello.did+`
 
 Candid は、{IC} で動作する Canister と対話するためのインターフェース記述言語（IDL）です。
 Candid ファイルは、Canister が定義する各関数の名前・引数・返し値のフォーマットやデータ型など、Canister のインターフェースを言語に依存しないように記述したものです。
@@ -247,22 +167,14 @@ Candid ファイルをプロジェクトに追加することで、Rust で定�
 
 Candid インターフェース記述言語の構文の詳細は link:../candid-guide/candid-intro{outfilesuffix}[_Candid ガイド_]か https://docs.rs/candid/[Candid クレートのドキュメント]をご覧ください。
 
-Candid ファイルを追加するには、以下のようにします:
-
-. 自分がプロジェクトのルートディレクトリにいることを確認します。
-. `+src/rust_hello/src/+` ディレクトリに、`+rust_hello.did+` という名前でファイルを作成します。
-. `+src/rust_hello/src/rust_hello.did+` ファイルをテキストエディタで開きます。
-. `+print+` 関数のために、以下のように `+service+` を定義します:
-+
 [source,did]
 ----
 service : {
-    "print": () -> () query;
+    "greet": (text) -> (text) query;
 }
 ----
-+
-これは、`+print+` 関数に渡されたデータが、変更されずに `+query+` として返されることを表しています。
-. 変更を保存してファイルを閉じ、次に進んでください。
+
+これは、`+greet+` 関数が `+text+` データを入力として受け取り `+text+` データを返す `+query+` メソッドであることを指定します。
 
 [[start-the-local-network]]
 == {LEE} を立ち上げる
@@ -306,45 +218,42 @@ dfx deploy
 +
 ....
 Creating a wallet canister on the local network.
-The wallet canister on the "local" network for user "pubs_user_id" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+The wallet canister on the "local" network for user "default" is "rwlgt-iiaaa-aaaaa-aaaaa-cai"
 Deploying all canisters.
 Creating canisters...
 Creating canister "rust_hello"...
 "rust_hello" canister created with canister id: "rrkah-fqaaa-aaaaa-aaaaq-cai"
+Creating canister "rust_hello_assets"...
+"rust_hello_assets" canister created with canister id: "ryjl3-tyaaa-aaaaa-aaaba-cai"
 Building canisters...
-Executing 'cargo build --target wasm32-unknown-unknown --package rust_hello --release'
+Executing: "cargo" "build" "--target" "wasm32-unknown-unknown" "--release" "-p" "rust_hello"
     Updating crates.io index
    Compiling unicode-xid v0.2.2
    ...
-Building canisters...
-Executing 'cargo build --target wasm32-unknown-unknown --package rust_hello --release'
-   Compiling rust_hello v0.1.0 (/Users/lisagunn/CDK-RS-APR-2021/rust_hello/src/rust_hello)
-    Finished release [optimized] target(s) in 1.26s
+Building frontend...
 Installing canisters...
 Creating UI canister on the local network.
-The UI canister on the "local" network is "rkp4c-7iaaa-aaaaa-aaaca-cai"
-Installing code for canister rust_hello, with canister_id r7inp-6aaaa-aaaaa-aaabq-cai
+The UI canister on the "local" network is "r7inp-6aaaa-aaaaa-aaabq-cai"
+Installing code for canister rust_hello, with canister_id rrkah-fqaaa-aaaaa-aaaaq-cai
+...
 Deployed canisters.
 ....
 
+[[Test-the-dapp]]
 == Dapp のテスト
 
 ローカルでデプロイした Dapp をテストするには、以下のようにします:
 
 . プロジェクトのルートディレクトリにいることを確認します。
-. Dpp の `+print+` 関数を以下のコマンドで呼び出します:
+. Dpp の `+greet+` 関数を以下のコマンドで呼び出します:
 +
 [source,bash]
 ----
-dfx canister call rust_hello print
+dfx canister call rust_hello greet world
 ----
-. `+rust_hello+` Canister の `+print+` 関数を呼び出した結果、以下のように `+Hello World from DFINITY!+` の挨拶が表示されることを確認します:
-+
-....
-[Canister ryjl3-tyaaa-aaaaa-aaaba-cai] Hello World from DFINITY!
-()
-....
+. rust_hello+` Canister の `+greet+` 関数の呼び出しがテキストメッセージである `+("Hello, world!")+` を返すことを確認します。
 
+[[Stop-the-LEE]]
 == {LEE} を止める
 
 アプリケーションのテストをした後は、{LEE} がバックグラウンドで稼働し続けないように、以下の手順で停止します:
