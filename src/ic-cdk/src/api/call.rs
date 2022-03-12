@@ -2,8 +2,10 @@
 use crate::api::{ic0, trap};
 use crate::export::Principal;
 use candid::utils::{ArgumentDecoder, ArgumentEncoder};
-use candid::{decode_args, encode_args, write_args};
+use candid::{decode_args, encode_args, write_args, CandidType};
+use serde::ser::Error;
 use std::future::Future;
+use std::marker::PhantomData;
 use std::pin::Pin;
 use std::task::{Context, Poll, Waker};
 
@@ -127,7 +129,7 @@ use rc::{InnerCell, WasmCell};
 /// These can be obtained either using `reject_code()` or `reject_result()`.
 #[allow(missing_docs)]
 #[repr(i32)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum RejectionCode {
     NoError = 0,
 
@@ -218,7 +220,7 @@ fn callback(state_ptr: *const InnerCell<CallFutureState<Vec<u8>>>) {
 pub fn call_raw(
     id: Principal,
     method: &str,
-    args_raw: Vec<u8>,
+    args_raw: &[u8],
     payment: u64,
 ) -> impl Future<Output = CallResult<Vec<u8>>> {
     let callee = id.as_slice();
@@ -264,7 +266,7 @@ pub async fn call<T: ArgumentEncoder, R: for<'a> ArgumentDecoder<'a>>(
     args: T,
 ) -> CallResult<R> {
     let args_raw = encode_args(args).expect("Failed to encode arguments.");
-    let bytes = call_raw(id, method, args_raw, 0).await?;
+    let bytes = call_raw(id, method, &args_raw, 0).await?;
     decode_args(&bytes).map_err(|err| trap(&format!("{:?}", err)))
 }
 
@@ -276,7 +278,7 @@ pub async fn call_with_payment<T: ArgumentEncoder, R: for<'a> ArgumentDecoder<'a
     cycles: u64,
 ) -> CallResult<R> {
     let args_raw = encode_args(args).expect("Failed to encode arguments.");
-    let bytes = call_raw(id, method, args_raw, cycles).await?;
+    let bytes = call_raw(id, method, &args_raw, cycles).await?;
     decode_args(&bytes).map_err(|err| trap(&format!("{:?}", err)))
 }
 
@@ -394,4 +396,54 @@ pub fn method_name() -> String {
         ic0::msg_method_name_copy(bytes.as_mut_ptr() as i32, 0, len as i32);
     }
     String::from_utf8_lossy(&bytes).to_string()
+}
+
+/// Pretends to have the Candid type `T`, but unconditionally errors
+/// when serialized.
+///
+/// Usable, but not required, as metadata when using `#[query(reply = false)]`,
+/// so an accurate Candid file can still be generated.
+#[derive(Debug, Copy, Clone, Default)]
+pub struct ManualReply<T: ?Sized>(PhantomData<T>);
+
+impl<T: ?Sized> ManualReply<T> {
+    /// Constructs a new `ManualReply`.
+    #[allow(clippy::self_named_constructors)]
+    pub const fn empty() -> Self {
+        Self(PhantomData)
+    }
+    /// Replies with the given value and returns a new `ManualReply`,
+    /// for a useful reply-then-return shortcut.
+    pub fn all<U>(value: U) -> Self
+    where
+        U: ArgumentEncoder,
+    {
+        reply(value);
+        Self::empty()
+    }
+    /// Replies with a one-element tuple around the given value and returns
+    /// a new `ManualReply`, for a useful reply-then-return shortcut.
+    pub fn one<U>(value: U) -> Self
+    where
+        U: CandidType,
+    {
+        reply((value,));
+        Self::empty()
+    }
+}
+
+impl<T> CandidType for ManualReply<T>
+where
+    T: CandidType + ?Sized,
+{
+    fn _ty() -> candid::types::Type {
+        T::_ty()
+    }
+    /// Unconditionally errors.
+    fn idl_serialize<S>(&self, _: S) -> Result<(), S::Error>
+    where
+        S: candid::types::Serializer,
+    {
+        Err(S::Error::custom("`Empty` cannot be serialized"))
+    }
 }
